@@ -1,9 +1,3 @@
-# import numpy as np, h5py
-# f = h5py.File(r'C://Users//Xin//Downloads//finalCS6923.mat','r')
-# data = f.get('test')
-# data = np.array(data) # For converting to numpy array
-
-
 import scipy.io
 import numpy
 from sklearn import svm
