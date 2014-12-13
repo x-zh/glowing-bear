@@ -26,7 +26,7 @@ LINEAR_REGRESSION_PARAMETERS = [{'C': [0.0001, 0.0003, 0.001, 0.003, 0.1, 0.3, 1
 def load_data(N=10000):
     return train[:N], np.ravel(train_label)[:N]
 
-def ml(method):    
+def ml(method='svm', num_iteration=1):    
     X, y = load_data()
     X = np.array(X, dtype=np.float64) # convert to float
     X_scaled = preprocessing.scale(X) # normalize
@@ -64,25 +64,30 @@ def ml(method):
         # 
         # -- linear --
         # 
-
-        X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_scaled, y, test_size=0.10, random_state=111)
-        clf = svm.SVC(
-            C=35, #clf.best_params_.get('C'),
-            cache_size=200,
-            class_weight=None,
-            coef0=0.0,
-            degree=3,
-            gamma=0.09,
-            kernel='rbf',  # linear / rbf 
-            max_iter=-1,
-            probability=False,
-            random_state=None,
-            shrinking=True,
-            tol=0.001,
-            verbose=False)  # kernel='linear')
-        clf.fit(X_train, y_train)
-        predicted = clf.predict(X_test)
-        print 'accuracy_score:', metrics.accuracy_score(y_test, predicted)
+        ave_accuracy_score = 0
+        for ni in xrange(num_iteration):
+            seed = np.random.randint(10000)
+            X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_scaled, y, test_size=0.10, random_state=seed)
+            clf = svm.SVC(
+                C=35, #clf.best_params_.get('C'),
+                cache_size=200,
+                class_weight=None,
+                coef0=0.0,
+                degree=3,
+                gamma=0.09,
+                kernel='rbf',  # linear / rbf 
+                max_iter=-1,
+                probability=False,
+                random_state=None,
+                shrinking=True,
+                tol=0.001,
+                verbose=False)  # kernel='linear')
+            clf.fit(X_train, y_train)
+            predicted = clf.predict(X_test)
+            accuracy_score = metrics.accuracy_score(y_test, predicted)
+            print '[%d/%d] accuracy_score:%f\tseed:%d' % (ni + 1, num_iteration, accuracy_score, seed)
+            ave_accuracy_score += accuracy_score
+        print '== Average accuracy score: %f ==' % (ave_accuracy_score / num_iteration)
 
 # ml('regression')
-ml('svm')
+ml(method='svm', num_iteration=10)
