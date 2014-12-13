@@ -62,26 +62,25 @@ def ml(method='svm', num_iteration=1):
         # best_params: {'kernel': 'rbf', 'C': 35, 'gamma': 0.09}
         # accuracy_score: 0.807
         # 
-        # -- linear --
-        # 
+        
+        clf = svm.SVC(
+            C=35, #clf.best_params_.get('C'),
+            cache_size=200,
+            class_weight=None,
+            coef0=0.0,
+            degree=3,
+            gamma=0.09,
+            kernel='rbf',  # linear / rbf 
+            max_iter=-1,
+            probability=False,
+            random_state=None,
+            shrinking=True,
+            tol=0.001,
+            verbose=False)  # kernel='linear')
         ave_accuracy_score = 0
         for ni in xrange(num_iteration):
             seed = np.random.randint(10000)
             X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_scaled, y, test_size=0.10, random_state=seed)
-            clf = svm.SVC(
-                C=35, #clf.best_params_.get('C'),
-                cache_size=200,
-                class_weight=None,
-                coef0=0.0,
-                degree=3,
-                gamma=0.09,
-                kernel='rbf',  # linear / rbf 
-                max_iter=-1,
-                probability=False,
-                random_state=None,
-                shrinking=True,
-                tol=0.001,
-                verbose=False)  # kernel='linear')
             clf.fit(X_train, y_train)
             predicted = clf.predict(X_test)
             accuracy_score = metrics.accuracy_score(y_test, predicted)
