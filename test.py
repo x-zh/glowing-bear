@@ -11,16 +11,33 @@ from sklearn import metrics
 mat = scipy.io.loadmat('finalCS6923.mat')
 train_label = mat.get('train_label')
 train = mat.get('train')
-# for i in range(10):
-#     print train[i]
-#     print train_label[i]
+test = mat.get('test')
 
 SVM_PARAMETERS = [
-    {'C': [0.001, 0.01, 0.1, 1, 10, 100], 'gamma': [0.001, 0.0001], 'kernel': ['rbf']},
-    {'C': [1, 10, 100], 'kernel': ['linear']}
+    {
+        'kernel': ['rbf'],
+        'C': [0.001, 0.01, 0.1, 1, 10, 100], 
+        'gamma': [0.1, 0.01, 0.001, 0.0001], 
+    },
+
+    {   
+        'kernel': ['linear'],
+        'C': [1, 10, 100],
+    },
+
+    {
+        'kernel': ['poly'], 
+        'C': [0.001, 0.01, 0.1, 1, 10, 100], 
+        'gamma': [0.1, 0.01, 0.001, 0.0001], 
+        'degree': [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    },
 ]
 
-LINEAR_REGRESSION_PARAMETERS = [{'C': [0.0001, 0.0003, 0.001, 0.003, 0.1, 0.3, 1, 3, 10, 30, 100]}]
+LINEAR_REGRESSION_PARAMETERS = [
+    {
+        'C': [0.0001, 0.0003, 0.001, 0.003, 0.1, 0.3, 1, 3, 10, 30, 100],
+    }
+]
 
 
 def load_data(N=10000):
@@ -31,10 +48,6 @@ def ml(method='svm', num_iteration=1):
     X = np.array(X, dtype=np.float64) # convert to float
     X_scaled = preprocessing.scale(X) # normalize
     clf = linear_model.LogisticRegression()
-
-    # crossvalidation
-    # scores = cross_validation.cross_val_score(clf, X_scaled, y, cv=10)
-    # print(scores.mean(), scores)
 
     # grid search Logistic regression
     if method == 'regression':
@@ -60,8 +73,6 @@ def ml(method='svm', num_iteration=1):
         
         # -- rbf --
         # best_params: {'kernel': 'rbf', 'C': 35, 'gamma': 0.09}
-        # accuracy_score: 0.807
-        # 
         
         clf = svm.SVC(
             C=35, #clf.best_params_.get('C'),
@@ -70,13 +81,13 @@ def ml(method='svm', num_iteration=1):
             coef0=0.0,
             degree=3,
             gamma=0.09,
-            kernel='rbf',  # linear / rbf 
+            kernel='rbf',  # linear / rbf / sigmoid / poly
             max_iter=-1,
             probability=False,
             random_state=None,
             shrinking=True,
             tol=0.001,
-            verbose=False)  # kernel='linear')
+            verbose=False)
         ave_accuracy_score = 0
         for ni in xrange(num_iteration):
             seed = np.random.randint(10000)
@@ -88,5 +99,21 @@ def ml(method='svm', num_iteration=1):
             ave_accuracy_score += accuracy_score
         print '== Average accuracy score: %f ==' % (ave_accuracy_score / num_iteration)
 
-# ml('regression')
-ml(method='svm', num_iteration=10)
+        return clf
+
+
+def label_test():
+    clf = ml(method='svm', num_iteration=1)
+    test_X = np.array(test, dtype=np.float64)
+    test_X_scaled = preprocessing.scale(test_X)
+    test_predicted = clf.predict(test_X_scaled)
+    with open('test_labels.txt', 'w') as f:
+        for i in test_predicted:
+            f.write(str(i) + '\n')
+    f.close()
+
+
+if __name__ == '__main__':
+    # ml('regression')
+    # ml(method='svm', num_iteration=10)
+    label_test()
